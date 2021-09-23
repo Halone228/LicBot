@@ -64,7 +64,6 @@ async def help(message: types.Message):
 
 @dp.message_handler()
 async def get_message(message: types.Message):
-    print(message.text)
     if db.check_if_exists(message.chat.id):
         if message.text.lower() == "миша":
             await message.answer("Миша красавчик",parse_mode='')
