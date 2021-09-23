@@ -3,7 +3,7 @@ from class_bd import Class_BD
 
 class MainDB:
     def __init__(self):
-       self.sq = sqlite3.connect('../main.db')
+       self.sq = sqlite3.connect('main.db')
        self.cursor = self.sq.cursor()
        self.cursor.execute("""CREATE TABLE IF NOT EXISTS main(chat_id BIGINT)""")
        self.sq.commit()
