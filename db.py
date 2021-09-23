@@ -1,5 +1,5 @@
 import sqlite3
-from LicBot.class_bd import Class_BD
+from class_bd import Class_BD
 
 class MainDB:
     def __init__(self):
