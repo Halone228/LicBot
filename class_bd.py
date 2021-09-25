@@ -51,13 +51,16 @@ CREATE TABLE IF NOT EXISTS class(learn STRING, dz STRING, date DATE)""")
 
     def get_rasp(self,day):
         try:
+            day = check_day(day)
             self.cursor.execute("""SELECT predmet FROM rasp WHERE day=?""",([day]))
             ras = self.cursor.fetchone()[0].split(" ")
             word_day = "".join([i for i in dic if dic[i] == day and not (i in not_days)])
             rasp = "".join([f"{i}. {val}\n" for i,val in enumerate(ras,start=1)])
             return f"********{word_day.upper()}********\n{rasp}"
-        except:
+        except Exception as e:
+            print(e)
             return "Походу повезло... В этот день уроков нету!"
+
     def delete(self,predmet,date):
         predmet = check_predmet(predmet)
         if predmet == False:

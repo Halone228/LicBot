@@ -118,7 +118,7 @@ async def get_message(message: types.Message):
             ))
         elif "установить расписание" == " ".join(message.text.lower().split()[0:2]):
             get = message.text.lower().split()[2:]
-            day = get_day(get[2])
+            day = get_day(get[0])
             await message.answer(Class_BD(message.chat.id).zapisat_rasp(day, get[1:]))
         elif "удалить" == message.text.lower().split()[0]:
             get = message.text.lower().split()
