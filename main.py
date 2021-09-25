@@ -7,6 +7,7 @@ from db import MainDB
 import sqlite3
 import datetime
 from modules import predmeti,get_day
+import keyboards
 
 
 
@@ -14,21 +15,19 @@ bot = Bot(token=TOKEN)
 loop = get_event_loop()
 dp = Dispatcher(bot, loop=loop)
 db = MainDB()
+admin = 1347781724
 
 
 async def check_date():
     print("Started!")
     while True:
-        print(db.get_array())
         for i in db.get_array():
             sq = sqlite3.connect(f'c{i[0]}.db')
             cursor = sq.cursor()
             get = cursor.execute("""SELECT * FROM class""").fetchall()
             for k in get:
-                print(k)
                 if k[2] == datetime.date.today().strftime("%d.%m.%Y"):
                     cursor.execute(f"""DELETE FROM class WHERE dz=? AND date=?""",([k[1],k[2]]))
-                    print("Deleted!")
                     sq.commit()
         await asyncio.sleep(600)
 
@@ -60,6 +59,30 @@ async def help(message: types.Message):
                          'Для просмотра расписания нужно написать сообщение такого рода:\n'
                          'посмотреть расписание день\n'
                          'Всё!', parse_mode='Markdown')
+
+
+@dp.message_handler(commands=['admin'])
+async def admin_panel(message: types.Message):
+    if message.chat.id == admin:
+        await message.answer("Что вы хотите сделать?",reply_markup=keyboards.get_admin_buttons())
+
+
+@dp.message_handler(commands=['дз'])
+async def send_dz(message: types.Message):
+    print(message.get_args().split())
+    predmet = message.get_args().split()[-1]
+    await message.answer(Class_BD(
+        message.chat.id).get_dz(
+        predmet
+    ))
+
+
+@dp.message_handler(commands='расписание')
+async def raspisanie(message: types.Message):
+    day = message.get_args().split()[-1]
+    await message.answer(Class_BD(message.chat.id).get_rasp(
+        day
+    ))
 
 
 @dp.message_handler()
