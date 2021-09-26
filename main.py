@@ -6,9 +6,8 @@ from asyncio import get_event_loop
 from db import MainDB
 import sqlite3
 import datetime
-from modules import predmeti,get_day
+from modules import get_day
 import keyboards
-
 
 
 bot = Bot(token=TOKEN)
@@ -31,6 +30,10 @@ async def check_date():
                     sq.commit()
         await asyncio.sleep(600)
 
+
+@dp.callback_query_handler(lambda c: c.data == 'amount')
+async def get_all_groups(callback: types.CallbackQuery):
+    await callback.answer(f"Бот использует {len(db.get_array())} групп.")
 
 
 @dp.message_handler(commands=['start'])
@@ -85,44 +88,29 @@ async def raspisanie(message: types.Message):
     ))
 
 
+@dp.message_handler(commands='записать')
+async def zapisat(message: types.Message):
+    args = message.get_args().split()
+    await message.answer(Class_BD(message.chat.id).write_dz(
+        args[0], " ".join(args[2:]), args[1]
+    ))
+
+
+@dp.message_handler(commands='удалить')
+async def delete(message: types.Message):
+    get = message.get_args().split()
+    await message.answer(Class_BD(message.chat.id).delete(get[0], get[1]))
+
+
 @dp.message_handler()
 async def get_message(message: types.Message):
     if db.check_if_exists(message.chat.id):
         if message.text.lower() == "миша":
             await message.answer("Миша красавчик",parse_mode='')
-        elif "посмотреть расписание" == " ".join(message.text.lower().split()[0:2]):
-            get = message.text.lower().split()
-            if get[2] == 'на':
-                try:
-                    await message.answer(Class_BD(message.chat.id).get_rasp(
-                        get_day(get[3])
-                    ))
-                except:
-                    await message.answer("Что-то пошло не по плану.....")
-            else:
-                await message.answer(Class_BD(message.chat.id).get_rasp(
-                    get_day(get[3])
-                ))
-        elif "записать" in message.text.lower().split()[0]:
-            text = message.text.lower().split()
-            if db.check_if_exists(message.chat.id):
-                await message.answer(Class_BD(message.chat.id).write_dz(
-                    text[1], " ".join(text[3:]), text[2]
-                ))
-            else:
-                await message.answer("Вас нету в базе данных")
-        elif "посмотреть" in message.text.lower().split()[0]:
-            await message.answer(Class_BD(
-                message.chat.id).get_dz(
-                message.text.lower().split()[1]
-            ))
         elif "установить расписание" == " ".join(message.text.lower().split()[0:2]):
             get = message.text.lower().split()[2:]
             day = get_day(get[0])
             await message.answer(Class_BD(message.chat.id).zapisat_rasp(day, get[1:]))
-        elif "удалить" == message.text.lower().split()[0]:
-            get = message.text.lower().split()
-            await message.answer(Class_BD(message.chat.id).delete(get[1], get[2]))
     else:
         if "добавить" in message.text.lower().split()[0]:
             get = message.text.lower().split()[1]
