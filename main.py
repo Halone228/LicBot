@@ -102,6 +102,12 @@ async def delete(message: types.Message):
     await message.answer(Class_BD(message.chat.id).delete(get[0], get[1]))
 
 
+@dp.message_handler(commands="добавить")
+async def in_bd(message: types.Message):
+    args = message.get_args().split()
+    await db.add_class(args[-1],message.chat.id)
+
+
 @dp.message_handler()
 async def get_message(message: types.Message):
     if db.check_if_exists(message.chat.id):
@@ -111,13 +117,6 @@ async def get_message(message: types.Message):
             get = message.text.lower().split()[2:]
             day = get_day(get[0])
             await message.answer(Class_BD(message.chat.id).zapisat_rasp(day, get[1:]))
-    else:
-        if "добавить" in message.text.lower().split()[0]:
-            get = message.text.lower().split()[1]
-            await bot.send_message(message.chat.id, db.add_class(get, message.chat.id))
-        else:
-            await message.answer("Вы не занесены в базу данных!")
-
 
 if __name__ == "__main__":
     loop.create_task(check_date())
