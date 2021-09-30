@@ -1,13 +1,15 @@
 import asyncio
-from class_bd import Class_BD
+from db_files.class_bd import Class_BD
 from aiogram import Bot, executor, Dispatcher, types
-from config import TOKEN
+from FrameWorks.config import TOKEN
 from asyncio import get_event_loop
-from db import MainDB
+from db_files.db import MainDB
 import sqlite3
 import datetime
-from modules import get_day
-import keyboards
+from FrameWorks.modules import get_day
+from FrameWorks import keyboards
+from Parsers import kinoParser
+from FrameWorks import json_to_info
 
 
 bot = Bot(token=TOKEN)
@@ -15,6 +17,12 @@ loop = get_event_loop()
 dp = Dispatcher(bot, loop=loop)
 db = MainDB()
 admin = 1347781724
+
+
+async def check_kino():
+    while True:
+        kinoParser.parser()
+        await asyncio.sleep(3600)
 
 
 async def check_date():
@@ -31,9 +39,30 @@ async def check_date():
         await asyncio.sleep(600)
 
 
+async def asyncs_def():
+    await check_kino()
+    await check_date()
+
+
 @dp.callback_query_handler(lambda c: c.data == 'amount')
 async def get_all_groups(callback: types.CallbackQuery):
     await callback.answer(f"Бот использует {len(db.get_array())} групп.")
+
+
+@dp.callback_query_handler(lambda c: c.data[0:1] == 'f')
+async def get_films(call: types.CallbackQuery):
+    dicts = json_to_info.get_info('files\\endless.json')
+    day_dict = dicts[call.data[1:]]
+    string = f"Фильмы на {call.data[1:]}:\n"
+    array = []
+    for key in day_dict:
+        array.append((":".join(["g"+call.data[1:],key])))
+    await bot.send_message(call.from_user.id,string,reply_markup=keyboards.keyboard_inline(array))
+
+@dp.message_handler(commands='фильмы')
+async def get_films(message: types.Message):
+    dicts = json_to_info.get_info('files\\endless.json')
+    await message.answer("******ФИЛЬМЫ******",reply_markup=keyboards.keyboard_inline(a_dict=dicts,rows=2))
 
 
 @dp.message_handler(commands=['start'])
@@ -67,7 +96,7 @@ async def help(message: types.Message):
 @dp.message_handler(commands=['admin'])
 async def admin_panel(message: types.Message):
     if message.chat.id == admin:
-        await message.answer("Что вы хотите сделать?",reply_markup=keyboards.get_admin_buttons())
+        await message.answer("Что вы хотите сделать?", reply_markup=keyboards.get_admin_buttons())
 
 
 @dp.message_handler(commands=['дз'])
@@ -119,5 +148,5 @@ async def get_message(message: types.Message):
             await message.answer(Class_BD(message.chat.id).zapisat_rasp(day, get[1:]))
 
 if __name__ == "__main__":
-    loop.create_task(check_date())
+    loop.create_task(asyncs_def())
     executor.start_polling(dp,skip_updates=True)

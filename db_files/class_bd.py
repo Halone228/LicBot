@@ -1,11 +1,11 @@
 import sqlite3 as sq
-from modules import check_predmet,check_date,check_day,\
-    predmeti,days_to_num as dic,not_days
+from LicBot.FrameWorks.modules import check_predmet,check_date,check_day, \
+    days_to_num as dic,not_days
 
 
 class Class_BD:
     def __init__(self,chat_id):
-        self.sq = sq.connect(f'c{chat_id}.db')
+        self.sq = sq.connect(f'db_files\\DataBases\\c{chat_id}.db')
         self.cursor = self.sq.cursor()
 
     def create(self):
